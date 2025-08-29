@@ -10,7 +10,7 @@ import os
 
 app = Flask(__name__)
 
-MODEL_PATH = "/mnt/d/modelos baixados/best_model_custom.keras"
+MODEL_PATH = "modelos baixados/best_model_custom.keras"
 IMG_SIZE = (224, 224)  # entrada do modelo
 LAST_CONV_LAYER_NAME = "separable_conv2d_13"
 
