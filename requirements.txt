@@ -1,3 +1,6 @@
 flask
 gunicorn
 tensorflow-cpu
+numpy
+opencv-python
+
