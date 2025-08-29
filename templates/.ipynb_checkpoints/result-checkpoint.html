@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Resultado da Predição</h1>
+        <p><b>Classe prevista:</b> {{predicted_class_name}}</p>
+        <p><b>Confiança:</b> {{ (confidence*100)|round(2) }}%</p>
+
+        <h3>Probabilidades:</h3>
+        <table>
+            <tr>
+                <th>Classe</th>
+                <th>Probabilidade (%)</th>
+            </tr>
+            {% for cls, prob in probs %}
+            <tr {% if cls == predicted_class_name %} class="highlight" {% endif %}>
+                <td>{{cls}}</td>
+                <td>{{ (prob*100)|round(2) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="images">
+            <div>
+                <h3>Imagem Original</h3>
+                <img src="{{orig_img}}" alt="Imagem original">
+            </div>
+            <div>
+                <h3>Grad-CAM</h3>
+                <img src="{{gradcam_img}}" alt="Grad-CAM">
+            </div>
+        </div>
+
+        <br><a href="/" class="btn">Voltar</a>
+    </div>
+</body>
+</html>

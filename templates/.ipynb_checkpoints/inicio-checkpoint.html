@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Predição de imagens OCT</h1>
+            <p>Geração por machine learning com Grad-CAM</p>
+        </div>
+
+        <div class="section">
+            <!-- Area do download -->
+            <div class="upload-container">
+                <h2 class="upload-title">Upload de Imagens</h2>
+                
+                <form id="uploadForm" method="post" enctype="multipart/form-data" action="/">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">🖼️</div>
+                        <div class="upload-text">Clique aqui para selecionar imagens</div>
+                        <div class="upload-subtext">Ou arraste e solte suas imagens aqui</div>
+                        <div class="upload-subtext">Suporte: JPG, PNG, WEBP (máx. 5MB cada)</div>
+                        <input type="file" id="fileInput" name="image" class="file-input" accept="image/*" />
+                    </div>
+
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+
+                    <div id="fileInfo" class="file-info">
+                        <div id="fileDetails"></div>
+                        <div class="preview-container" id="previewContainer"></div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        Enviar Imagens
+                    </button>
+                </form>
+            </div>
+
+            
+            <!-- Botões de ação -->
+            <!-- <div class="controls">
+                <button id="processSheetBtn" class="btn btn-primary" disabled onclick="processSheet()">
+                    🔄 Processar Imagem
+                </button>
+                <button class="btn" onclick="clearSheet()">🗑️ Limpar</button>
+                <input type="submit" value="Analisar">
+            </div> -->
+
+
+            <div id="sheetStatus" class="status"></div>
+
+            <!-- Pode mostrar o resultado tudo em um pagina só  -->
+
+            <!-- <div id="sheetResults" class="results">
+                <h4>🎼 Áudio Gerado:</h4>
+                <div id="sheetOutput"></div>
+                <audio id="generatedAudio" controls style="width: 100%; margin-top: 15px; display: none;"></audio>
+            </div> -->
+        </div>
+
+
+        <!-- <h2>Envie uma imagem OCT</h2>
+        <form method="post" enctype="multipart/form-data">
+        <input type="file" name="image">
+        <input type="submit" value="Analisar">
+        </form> -->
+    </div>
+
+
+
+
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileDetails = document.getElementById('fileDetails');
+        const previewContainer = document.getElementById('previewContainer');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const uploadForm = document.getElementById('uploadForm');
+
+        let selectedFiles = [];
+
+        // Clique na área de upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            handleFiles(files);
+        });
+
+        // Seleção de arquivos
+        fileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+        });
+
+        function handleFiles(files) {
+            selectedFiles = files.filter(file => {
+                if (!file.type.startsWith('image/')) {
+                    alert(`${file.name} não é uma imagem válida.`);
+                    return false;
+                }
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`${file.name} é muito grande. Máximo 5MB.`);
+                    return false;
+                }
+                return true;
+            });
+        
+            if (selectedFiles.length > 0) {
+                // 👇 coloca o arquivo dentro do input "image"
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(selectedFiles[0]); // pega o primeiro
+                fileInput.files = dataTransfer.files;
+        
+                displayFileInfo();
+                generatePreviews();
+                submitBtn.classList.add('active');
+            } else {
+                hideFileInfo();
+                submitBtn.classList.remove('active');
+            }
+        }
+
+        function displayFileInfo() {
+            const totalSize = selectedFiles.reduce((total, file) => total + file.size, 0);
+            const formattedSize = formatFileSize(totalSize);
+            
+            fileDetails.innerHTML = `
+                <div><strong>Arquivos selecionados:</strong> ${selectedFiles.length}</div>
+                <div><strong>Tamanho total:</strong> ${formattedSize}</div>
+                <button type="button" class="remove-file" onclick="clearFiles()">Remover todos</button>
+            `;
+            
+            fileInfo.classList.add('show');
+        }
+
+        function generatePreviews() {
+            previewContainer.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-image';
+                    img.title = file.name;
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function clearFiles() {
+            selectedFiles = [];
+            hideFileInfo();
+            submitBtn.classList.remove('active');
+        }
+
+        function hideFileInfo() {
+            fileInfo.classList.remove('show');
+            previewContainer.innerHTML = '';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Envio do formulário para Flask
+        uploadForm.addEventListener('submit', (e) => {
+            if (selectedFiles.length === 0) {
+                e.preventDefault();
+                alert('Por favor, selecione pelo menos uma imagem.');
+                return;
+            }
+            
+            // Mostrar feedback visual durante o envio
+            submitBtn.textContent = 'Enviando...';
+            submitBtn.style.opacity = '0.7';
+            submitBtn.style.pointerEvents = 'none';
+            progressBar.style.display = 'block';
+            
+            // Simular progresso visual (opcional)
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                if (progress >= 90) {
+                    clearInterval(interval);
+                }
+                progressFill.style.width = progress + '%';
+            }, 100);
+            
+            // O formulário será enviado normalmente para o Flask
+        });
+    </script>
+</body>
+</html>

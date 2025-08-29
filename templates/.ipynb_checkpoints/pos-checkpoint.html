@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado da Predição</title>
+    <link rel="stylesheet" href="../static/resultado.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Resultado da Predição</h1>
+            <p>Mais Grad-CAM</p>
+        </div>
+
+
+        <!-- Debug Info -->
+        <div id="debugInfo" class="debug-info">
+            <div>🔧 Debug Console:</div>
+            <div id="debugOutput"></div>
+        </div>
+
+
+        <p><b>Classe prevista:</b> {{predicted_class_name}}</p>
+        <p><b>Confiança:</b> {{ (confidence * 100) | round(2) }}%</p>
+
+        <h3>Probabilidades:</h3>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+            <th>Classe</th>
+            <th>Probabilidade (%)</th>
+            </tr>
+            {% for cls, prob in probs %}
+            <tr {% if cls == predicted_class_name %} style="background:#d0ffd0;" {% endif %}>
+            <td>{{cls}}</td>
+            <td>{{ (prob*100)|round(2) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h3>Imagem com Grad-CAM (tamanho original)</h3>
+        <img src="{{img_data}}" style="max-width:600px; border:1px solid #333;" />
+
+        <br><br><a href="/">Voltar</a>
+    </div>
+</body>
+</html>
