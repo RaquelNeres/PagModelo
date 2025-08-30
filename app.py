@@ -82,6 +82,10 @@ def index():
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+        
+        img = Image.open(image_path).convert("L")  # L = grayscale
+
+
         # Pré-processamento
         img = crop_and_equalize(img)
         orig_array = img.copy()
