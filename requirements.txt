@@ -3,4 +3,5 @@ gunicorn
 tensorflow-cpu
 numpy
 opencv-python
-
+keras
+opencv-python
