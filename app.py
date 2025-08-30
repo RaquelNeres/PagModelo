@@ -11,7 +11,7 @@ import os
 app = Flask(__name__)
 
 MODEL_PATH = "modelos baixados/best_model_custom.keras"
-IMG_SIZE = (224, 224)  # entrada do modelo
+IMG_SIZE = (128, 128)  # entrada do modelo
 LAST_CONV_LAYER_NAME = "separable_conv2d_13"
 
 # Carregar modelo
@@ -81,10 +81,6 @@ def index():
             return render_template("index.html", error="Formato não suportado (ex: AVIF).")
 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        
-        img = Image.open(image_path).convert("L")  # L = grayscale
-
 
         # Pré-processamento
         img = crop_and_equalize(img)
