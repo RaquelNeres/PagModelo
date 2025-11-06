@@ -210,25 +210,6 @@ Use `python3` ao invés de `python`:
 python3 run.py
 ```
 
-### Erro de Import do TensorFlow
-
-Se encontrar erros relacionados ao TensorFlow, tente:
-```bash
-pip install tensorflow==2.19.0 --upgrade
-```
-
-### Erro no OpenCV
-
-Para problemas com o OpenCV:
-```bash
-pip uninstall opencv-python
-pip install opencv-python==4.11.0.86
-```
-
-### Modelo não encontrado
-
-Verifique se o arquivo `best_model_custom.keras` está na pasta `modelos baixados/` e se o caminho no código está correto.
-
 ### Aviso sobre variáveis do otimizador
 
 Se aparecer o aviso:
@@ -242,16 +223,21 @@ Este é um aviso normal devido a diferenças entre versões do TensorFlow. O mod
 
 Para usar GPU com TensorFlow, instale as dependências CUDA apropriadas conforme a documentação oficial do TensorFlow.
 
-## Acessando Arquivos no WSL
+### Erro: TypeError: list indices must be integers or slices, not tuple
 
-Para acessar os arquivos do projeto no Windows Explorer quando estiver usando WSL:
+Se você encontrar este erro na função `make_gradcam_heatmap`, é devido a uma incompatibilidade no formato de saída do modelo no TensorFlow 2.19.0.
 
-1. No terminal WSL, execute:
-   ```bash
-   explorer.exe .
-   ```
+**Solução:** Na função `make_gradcam_heatmap` (arquivo `app.py`), adicione esta verificação logo após desempacotar os outputs:
 
-2. Ou navegue para: `\\wsl$\Ubuntu\home\seu_usuario\caminho\do\projeto`
+```python
+last_conv_layer_output, preds = grad_model(img_array, training=False)
+# Corrige formato do preds
+if isinstance(preds, (list, tuple)):
+    preds = tf.convert_to_tensor(preds[0])  # Converte lista -> tensor
+preds = tf.reshape(preds, [-1])  # Garante formato correto
+```
+
+Esta correção garante compatibilidade com TensorFlow 2.19.0 e versões futuras.
 
 ## Contribuição
 

@@ -41,19 +41,32 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name, pred_index=None
     grad_model = keras.models.Model(
         model.inputs, [model.get_layer(last_conv_layer_name).output, model.output]
     )
+
     with tf.GradientTape() as tape:
         last_conv_layer_output, preds = grad_model(img_array, training=False)
-        if pred_index is None:
-            pred_index = tf.argmax(preds[0])
-        class_channel = preds[:, pred_index]
 
+        # Corrige formato do preds
+        if isinstance(preds, (list, tuple)):
+            preds = tf.convert_to_tensor(preds[0])  # Converte lista -> tensor
+        preds = tf.reshape(preds, [-1])  # Garante formato (4,)
+
+        if pred_index is None:
+            pred_index = tf.argmax(preds)
+
+        # Mantém como tensor rastreável
+        class_channel = preds[pred_index]
+
+    # Calcula gradientes
     grads = tape.gradient(class_channel, last_conv_layer_output)
     pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
     last_conv_layer_output = last_conv_layer_output[0]
+
     heatmap = last_conv_layer_output @ pooled_grads[..., tf.newaxis]
     heatmap = tf.squeeze(heatmap)
     heatmap = tf.maximum(heatmap, 0) / (tf.math.reduce_max(heatmap) + 1e-8)
+
     return heatmap.numpy()
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
