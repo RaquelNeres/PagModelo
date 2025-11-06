@@ -19,58 +19,103 @@ As tecnologias utilizadas incluem: **Flask** (backend), **TensorFlow/Keras** (ma
 - Pré-processamento automático das imagens (remoção de bordas e equalização)
 - Interface web intuitiva para uso médico
 
+## IMPORTANTE - Requisitos de Sistema
+
+**O TensorFlow 2.19.0 NÃO tem suporte nativo para Windows.** Para executar este projeto no Windows, você **DEVE** usar o WSL (Windows Subsystem for Linux).
+
+
 ## Getting Started
 
 ### 1. Pré-requisitos
 
-Certifique-se de ter o **Python 3.8+** instalado em sua máquina. Você pode verificar executando:
+#### Para Usuários Windows: Configurar WSL2
+
+**IMPORTANTE:** Se você está no Windows, siga estas etapas primeiro antes de continuar:
+
+1. **Instalar WSL2:**
+   ```powershell
+   wsl --install
+   ```
+   Reinicie o computador quando solicitado.
+
+2. **Instalar Ubuntu no WSL:**
+   ```powershell
+   wsl --install -d Ubuntu
+   ```
+
+3. **Configurar usuário e senha** quando o Ubuntu iniciar pela primeira vez.
+
+4. **Atualizar pacotes do Ubuntu:**
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   ```
+
+5. **Instalar Python 3.8+ no WSL:**
+   ```bash
+   sudo apt install python3 python3-pip python3-venv -y
+   ```
+
+6. **Verificar instalação:**
+   ```bash
+   python3 --version
+   ```
+
+**Documentação oficial:**
+- **Instalação do WSL:** https://learn.microsoft.com/pt-br/windows/wsl/install
+- **Instalação do TensorFlow:** https://www.tensorflow.org/install/pip
+
+#### Para Usuários Linux/macOS:
+
+Certifique-se de ter o **Python 3.8+** instalado:
 
 ```bash
-python --version
+python3 --version
 ```
 
 ### 2. Configuração do Ambiente
 
-1. Clone ou baixe o projeto para sua máquina local
-2. Navegue até a pasta do projeto no terminal
-3. Crie um ambiente virtual para isolamento das dependências:
+1. **Abra o terminal** (WSL no Windows, terminal normal no Linux/macOS)
 
-```bash
-python -m venv venv_oct_analysis
-```
+2. **Clone ou baixe o projeto** para sua máquina local
 
-4. Ative o ambiente virtual:
+3. **Navegue até a pasta do projeto:**
+   ```bash
+   cd /caminho/para/PagModelo
+   ```
 
-**No Windows (PowerShell):**
-```bash
-./venv_oct_analysis/Scripts/Activate.ps1
-```
+4. **Crie um ambiente virtual:**
+   ```bash
+   python3 -m venv venv_oct_analysis
+   ```
 
-**No Windows (CMD):**
-```bash
-venv_oct_analysis\Scripts\activate
-```
+5. **Ative o ambiente virtual:**
 
-**No Linux/MacOS:**
-```bash
-source venv_oct_analysis/bin/activate
-```
+   **No WSL/Linux:**
+   ```bash
+   source venv_oct_analysis/bin/activate
+   ```
+
+   **No macOS:**
+   ```bash
+   source venv_oct_analysis/bin/activate
+   ```
 
 ### 3. Instalação das Dependências
 
 Com o ambiente virtual ativado, instale todas as bibliotecas necessárias:
 
 ```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+**Ou instale individualmente:**
+```bash
 pip install flask==3.1.1
 pip install tensorflow==2.19.0
 pip install numpy==2.1.3
 pip install opencv-python==4.11.0.86
 pip install pillow==11.1.0
-```
-
-**Ou use o arquivo requirements.txt:**
-```bash
-pip install -r requirements.txt
 ```
 
 ### 4. Estrutura do Projeto
@@ -82,12 +127,14 @@ projeto/
 │
 ├── app.py                 # Aplicação Flask principal
 ├── run.py                 # Script para executar o servidor
+├── requirements.txt       # Dependências do projeto
 ├── modelos baixados/      # Pasta com o modelo treinado
 │   └── best_model_custom.keras
 ├── templates/             # Templates HTML
 │   ├── index.html
 │   └── result.html
-└── static/               # Arquivos CSS/JS 
+└── static/               # Arquivos CSS/JS
+    └── style.css
 ```
 
 ### 5. Modelo de Machine Learning
@@ -114,6 +161,8 @@ python app.py
 
 A aplicação estará disponível em: **http://localhost:5000** ou **http://127.0.0.1:5000**
 
+**Nota para usuários WSL:** Você pode acessar a aplicação no seu navegador Windows normalmente usando esses endereços.
+
 ### 7. Utilizando o Sistema
 
 1. Acesse a URL no seu navegador
@@ -130,7 +179,7 @@ A aplicação estará disponível em: **http://localhost:5000** ou **http://127.
 
 ### Bibliotecas Principais
 - **Flask 3.1.1** - Framework web
-- **TensorFlow 2.19.0** - Deep learning
+- **TensorFlow 2.19.0** - Deep learning (requer WSL no Windows)
 - **OpenCV 4.11.0** - Processamento de imagens
 - **NumPy 2.1.3** - Computação numérica
 - **Pillow 11.1.0** - Manipulação de imagens
@@ -148,13 +197,28 @@ A aplicação estará disponível em: **http://localhost:5000** ou **http://127.
 
 ## Troubleshooting
 
+### Erro: TensorFlow não instala no Windows nativo
+
+**Problema:** Tentou instalar o TensorFlow 2.19.0 diretamente no Windows (PowerShell/CMD).
+
+**Solução:** Use WSL2 conforme instruções acima. O TensorFlow 2.19.0 requer ambiente Linux.
+
+### Erro no WSL: "python: command not found"
+
+Use `python3` ao invés de `python`:
+```bash
+python3 run.py
+```
+
 ### Erro de Import do TensorFlow
+
 Se encontrar erros relacionados ao TensorFlow, tente:
 ```bash
 pip install tensorflow==2.19.0 --upgrade
 ```
 
 ### Erro no OpenCV
+
 Para problemas com o OpenCV:
 ```bash
 pip uninstall opencv-python
@@ -162,10 +226,32 @@ pip install opencv-python==4.11.0.86
 ```
 
 ### Modelo não encontrado
+
 Verifique se o arquivo `best_model_custom.keras` está na pasta `modelos baixados/` e se o caminho no código está correto.
 
-### Problemas de GPU (Opcional)
+### Aviso sobre variáveis do otimizador
+
+Se aparecer o aviso:
+```
+UserWarning: Skipping variable loading for optimizer 'adam', because it has 96 variables whereas the saved optimizer has 100 variables.
+```
+
+Este é um aviso normal devido a diferenças entre versões do TensorFlow. O modelo funcionará corretamente.
+
+### Problemas de GPU 
+
 Para usar GPU com TensorFlow, instale as dependências CUDA apropriadas conforme a documentação oficial do TensorFlow.
+
+## Acessando Arquivos no WSL
+
+Para acessar os arquivos do projeto no Windows Explorer quando estiver usando WSL:
+
+1. No terminal WSL, execute:
+   ```bash
+   explorer.exe .
+   ```
+
+2. Ou navegue para: `\\wsl$\Ubuntu\home\seu_usuario\caminho\do\projeto`
 
 ## Contribuição
 
@@ -180,10 +266,12 @@ Para contribuir com o projeto:
 ## Suporte
 
 Em caso de dúvidas ou problemas:
-- Verifique se todas as dependências estão instaladas corretamente
-- Confirme que o modelo está no local correto
+- **Primeiro:** Verifique se está usando WSL no Windows
+- Confirme que todas as dependências estão instaladas corretamente
+- Verifique se o modelo está no local correto
 - Teste com imagens de diferentes formatos
 - Consulte os logs de erro no terminal para diagnóstico
+- Consulte a documentação oficial do TensorFlow: https://www.tensorflow.org/install/pip
 
 ---
 
